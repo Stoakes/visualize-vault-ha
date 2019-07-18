@@ -4,20 +4,16 @@
 
 ![Image of dashboard](./dashboard.png)
 
-This depends on the not yet merged [#5731](https://github.com/hashicorp/vault/pull/5731).
-To visualize this, ensure you have docker-compose and Go 1.12 in your path then:
+This demonstrates Vault HA backed by a Postgres backend and with automatic auto unseal using Vault Transit.
+It requires Vault 1.2.0
+To visualize this, ensure you have docker-compose in your path then:
 
-1. ```cd ~/workdir```
-2. ```git clone -b postgres-ha-support https://github.com/bjorndolk/vault```
-3. ```cd vault && XC_OSARCH=linux/amd64 make dev```
-4. ```cd ~/workdir```
-5. ```git clone https://github.com/ncabatoff/visualize-vault-ha```
-6. ```cd visualize-vault-ha/postgres```
-7. ```cp ../../vault/bin/vault ./vault/bin```
-8. ```./launch.sh```
-9. go to http://admin:admin@localhost:3000
+1. ```git clone https://github.com/stoakes/visualize-vault-ha```
+2. ```cd visualize-vault-ha/postgres```
+3. ```docker-compose up```
+4. go to http://admin:admin@localhost:3000
 
-./launch.sh will run docker-compose which will run:
+docker-compose will run:
 - postgres for storage
 - consul for service discovery
 - prometheus, consul-exporter for metrics
@@ -30,10 +26,7 @@ vault1 and vault2 are run in such a way that they get killed and restarted regul
 
 client constantly asks Consul for a healthy vault to talk to, then sends that vault a KV PUT.
 
-When done, use
+When done, use `docker-compose down` to stop the containers.
 
-```bash
-cd ~/workdir/visualize-vault-ha/postgres && docker-compose down
-```
-
-to stop the containers.
+**Note:** If you want to restart the demo again (after a `docker-compose stop` for instance), you will have to unseal the transit vault.
+Keys are in the logs.

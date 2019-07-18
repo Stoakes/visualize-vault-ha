@@ -38,9 +38,7 @@ services:
       - 3000:3000
 
   vault-transit:
-    # We don't use consul in this container, but we need jq and we're already
-    # using consul for the other vault containers anyway.
-    image: consul
+    build: ./vault
     container_name: vault-transit
     cap_add:
       - IPC_LOCK
@@ -53,7 +51,7 @@ services:
       - 8210
 
   vault1:
-    image: consul
+    build: ./vault
     container_name: vault1
     cap_add:
       - IPC_LOCK
@@ -70,7 +68,7 @@ services:
       - 8200
 
   vault2:
-    image: consul
+    build: ./vault
     container_name: vault2
     cap_add:
       - IPC_LOCK
@@ -118,7 +116,7 @@ services:
       - 8501:8500
 
   client:
-    image: consul
+    image: golang:1.12
     container_name: client
     volumes:
       - ./client:/client
@@ -127,9 +125,10 @@ services:
       - CONSUL_HTTP_ADDR=consul:8500
       - VAULT_TOKEN=my-root-token
       - VAULT_ADDR=http://vault.service.dc1.consul:8200
+      - GO111MODULE=on
     command:
       - -c
-      - /client/client
+      - go run /client/main.go
     expose:
       - 8080
 

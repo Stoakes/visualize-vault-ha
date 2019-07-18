@@ -1,15 +1,15 @@
 #!/bin/sh
 
 mkdir -p /data/file /config
-/vault/bin/vault server -config=/vault/config/vault-transit.hcl &
+vault server -config=/vault/config/vault-transit.hcl &
 
 sleep 3
 
-PATH=$PATH:/vault/bin
 export VAULT_ADDR=http://localhost:8210
 
 initoutput=$(vault operator init -key-shares=1 -key-threshold=1 -format=json)
 vault operator unseal $(echo "$initoutput" | jq -r .unseal_keys_hex[0])
+echo $initoutput
 
 export VAULT_TOKEN=$(echo "$initoutput" | jq -r .root_token)
 

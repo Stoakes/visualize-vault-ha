@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"time"
+
 	consulapi "github.com/hashicorp/consul/api"
 	vaultapi "github.com/hashicorp/vault/api"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"log"
-	"net/http"
-	"time"
 )
 
 var (
@@ -25,6 +26,7 @@ func init() {
 	prometheus.MustRegister(rpcs)
 	prometheus.MustRegister(rpcerrs)
 	go http.ListenAndServe(":8080", nil)
+	fmt.Println("Server started")
 }
 
 func main() {
@@ -33,16 +35,17 @@ func main() {
 		log.Fatal(err)
 	}
 	health := consul.Health()
-
+	fmt.Println("Hello client")
 	for {
 		csvc, _, _ := health.Service("vault", "", true, nil)
+		fmt.Println(csvc)
 		vaults.Set(float64(len(csvc)))
 		if len(csvc) == 0 {
 			time.Sleep(time.Second)
 			continue
 		}
 
-		// log.Printf("%# v, %# v", csvc[0].Node, csvc[0].Service)
+		log.Printf("%# v, %# v", csvc[0].Node, csvc[0].Service)
 
 		vaultcfg := vaultapi.DefaultConfig()
 		vaultcfg.Address = fmt.Sprintf("http://%s:%d",
@@ -52,6 +55,7 @@ func main() {
 			log.Fatal(err)
 		}
 
+		// fmt.Println("client write")
 		_, err = vault.Logical().Write("kv/data/foo", map[string]interface{}{
 			"data": map[string]interface{}{
 				"bar": "v1",
@@ -62,6 +66,6 @@ func main() {
 			rpcerrs.WithLabelValues(vaultcfg.Address, csvc[0].Node.Node).Inc()
 		}
 		rpcs.WithLabelValues(vaultcfg.Address, csvc[0].Node.Node).Inc()
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(1000 * time.Millisecond)
 	}
 }

@@ -6,12 +6,10 @@
 
 
 # ------------ Consul -----------
-cp /vault/config/vault-consul-service.json /consul/config
-consul agent -client=0.0.0.0 -retry-interval=5s -retry-join=consul -data-dir=/consul/data -config-dir=/consul/config &
+consul agent -client=0.0.0.0 -retry-interval=5s -retry-join=consul -data-dir=/consul/data -config-dir=/vault/config/vault-consul-service.json &
 
 # ------------ Vault ------------
 mkdir /config /data
-PATH=$PATH:/vault/bin
 export VAULT_ADDR=http://localhost:8200
 
 echo "waiting for vault-transit"
